@@ -18,6 +18,7 @@ export const GestureRecognition: React.FC<GestureRecognitionProps> = ({
   const { toast } = useToast();
   const videoRef = useRef<HTMLVideoElement>(null);
   const [hasCameraPermission, setHasCameraPermission] = useState(false);
+  const [countdown, setCountdown] = useState<number | null>(null);
 
   useEffect(() => {
     const getCameraPermission = async () => {
@@ -72,6 +73,24 @@ export const GestureRecognition: React.FC<GestureRecognitionProps> = ({
     }
   };
 
+  const startCountdown = () => {
+    setCountdown(3);
+  };
+
+  useEffect(() => {
+    if (countdown === null) return;
+
+    if (countdown > 0) {
+      const timer = setTimeout(() => {
+        setCountdown(countdown - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    } else if (countdown === 0) {
+      capturePhoto();
+      setCountdown(null);
+    }
+  }, [countdown]);
+
   const capturePhoto = () => {
     if (!videoRef.current) {
       setError("Camera not initialized. Please ensure camera access is enabled.");
@@ -107,8 +126,15 @@ export const GestureRecognition: React.FC<GestureRecognitionProps> = ({
             </Alert>
       )
       }
+       {countdown !== null ? (
+        <div className="text-5xl font-bold text-accent">{countdown}</div>
+      ) : (
+           <Button onClick={startCountdown} disabled={!hasCameraPermission}>
+             Capture Gesture
+           </Button>
+      )}
       <div className="flex space-x-4">
-        <Button onClick={capturePhoto} disabled={!hasCameraPermission}>Capture Gesture</Button>
+
         <Button onClick={handleGesture} disabled={!photoUrl || !hasCameraPermission}>Recognize Gesture</Button>
       </div>
       {photoUrl && (
