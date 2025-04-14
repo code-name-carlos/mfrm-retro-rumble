@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { recognizeGesture } from "@/ai/flows/gesture-recognition";
 import { useToast } from "@/hooks/use-toast";
@@ -21,30 +21,32 @@ export const GestureRecognition: React.FC<GestureRecognitionProps> = ({
   const [countdown, setCountdown] = useState<number | null>(null);
   const [isCapturing, setIsCapturing] = useState(false); // Track if capture is in progress
 
-  useEffect(() => {
-    const getCameraPermission = async () => {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({video: true});
-        setHasCameraPermission(true);
+  const getCameraPermission = useCallback(async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({video: true});
+      setHasCameraPermission(true);
 
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-        }
-      } catch (error) {
-        console.error('Error accessing camera:', error);
-        setHasCameraPermission(false);
-        toast({
-          variant: 'destructive',
-          title: 'Camera Access Denied',
-          description: 'Please enable camera permissions in your browser settings to use this app.',
-        });
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
       }
-    };
+    } catch (err: any) {
+      console.error('Error accessing camera:', err);
+      setHasCameraPermission(false);
+      toast({
+        variant: 'destructive',
+        title: 'Camera Access Denied',
+        description: 'Please enable camera permissions in your browser settings to use this app.',
+      });
+    }
+  }, [toast]);
 
-    getCameraPermission();
-  }, []);
+  // Get camera permission on mount
+  useEffect(() => {
+      getCameraPermission();
+    }, [getCameraPermission]);
 
 
+  //Toast when error occur
   useEffect(() => {
     if (error) {
       toast({
@@ -56,13 +58,13 @@ export const GestureRecognition: React.FC<GestureRecognitionProps> = ({
     }
   }, [error, toast]);
 
-  const handleGesture = async () => {
-      setIsCapturing(true);
+  const handleGesture = useCallback(async () => {
     if (!photoUrl) {
       setError("No photo available. Please capture a gesture first.");
-          setIsCapturing(false);
       return;
     }
+
+    setIsCapturing(true);
 
     try {
       const result = await recognizeGesture({ photoUrl });
@@ -71,16 +73,17 @@ export const GestureRecognition: React.FC<GestureRecognitionProps> = ({
       } else {
         setError(result.errorMessage || "Failed to recognize gesture.");
       }
-    } catch (e) {
+    } catch (err: any) {
+      console.error("Error occurred during gesture recognition:", err);
       setError("Error occurred during gesture recognition.");
     } finally {
-         setIsCapturing(false);
+      setIsCapturing(false);
     }
-  };
+  }, [onMoveSelect, photoUrl]);
 
-  const startCountdown = () => {
+  const startCountdown = useCallback(() => {
     setCountdown(3);
-  };
+  }, []);
 
   useEffect(() => {
     if (countdown === null) return;
@@ -96,7 +99,7 @@ export const GestureRecognition: React.FC<GestureRecognitionProps> = ({
     }
   }, [countdown]);
 
-  const capturePhoto = () => {
+  const capturePhoto = useCallback(() => {
     if (!videoRef.current) {
       setError("Camera not initialized. Please ensure camera access is enabled.");
       return;
@@ -116,14 +119,21 @@ export const GestureRecognition: React.FC<GestureRecognitionProps> = ({
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
     const newPhotoUrl = canvas.toDataURL('image/png');
     setPhotoUrl(newPhotoUrl);
-  };
+  }, []);
 
-  const handleShoot = () => {
+  const handleShoot = useCallback(() => {
     // Reset states before starting a new capture
     setPhotoUrl(null);
     setError(null);
     startCountdown();
-  };
+  }, [startCountdown]);
+
+    //This useEffect captures after screen recording has a photoURL
+    useEffect(() => {
+        if (photoUrl) {
+            handleGesture();
+        }
+    }, [photoUrl, handleGesture])
 
   return (
     <div className="flex flex-col items-center space-y-4">
@@ -145,10 +155,6 @@ export const GestureRecognition: React.FC<GestureRecognitionProps> = ({
              Shoot!
            </Button>
       )}
-      <div className="flex space-x-4">
-
-        <Button onClick={handleGesture} disabled={!photoUrl || !hasCameraPermission || isCapturing}>Recognize Gesture</Button>
-      </div>
       {photoUrl && (
         <img src={photoUrl} alt="Captured Gesture" className="max-w-md rounded-md shadow-lg" />
       )}
