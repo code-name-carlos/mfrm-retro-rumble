@@ -19,6 +19,7 @@ export const GestureRecognition: React.FC<GestureRecognitionProps> = ({
   const videoRef = useRef<HTMLVideoElement>(null);
   const [hasCameraPermission, setHasCameraPermission] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(null);
+  const [isCapturing, setIsCapturing] = useState(false); // Track if capture is in progress
 
   useEffect(() => {
     const getCameraPermission = async () => {
@@ -56,8 +57,10 @@ export const GestureRecognition: React.FC<GestureRecognitionProps> = ({
   }, [error, toast]);
 
   const handleGesture = async () => {
+      setIsCapturing(true);
     if (!photoUrl) {
       setError("No photo available. Please capture a gesture first.");
+          setIsCapturing(false);
       return;
     }
 
@@ -70,6 +73,8 @@ export const GestureRecognition: React.FC<GestureRecognitionProps> = ({
       }
     } catch (e) {
       setError("Error occurred during gesture recognition.");
+    } finally {
+         setIsCapturing(false);
     }
   };
 
@@ -113,6 +118,13 @@ export const GestureRecognition: React.FC<GestureRecognitionProps> = ({
     setPhotoUrl(newPhotoUrl);
   };
 
+  const handleShoot = () => {
+    // Reset states before starting a new capture
+    setPhotoUrl(null);
+    setError(null);
+    startCountdown();
+  };
+
   return (
     <div className="flex flex-col items-center space-y-4">
       <video ref={videoRef} className="w-full aspect-video rounded-md" autoPlay muted />
@@ -129,13 +141,13 @@ export const GestureRecognition: React.FC<GestureRecognitionProps> = ({
        {countdown !== null ? (
         <div className="text-5xl font-bold text-accent">{countdown}</div>
       ) : (
-           <Button onClick={startCountdown} disabled={!hasCameraPermission}>
-             Capture Gesture
+           <Button onClick={handleShoot} disabled={!hasCameraPermission || isCapturing} >
+             Shoot!
            </Button>
       )}
       <div className="flex space-x-4">
 
-        <Button onClick={handleGesture} disabled={!photoUrl || !hasCameraPermission}>Recognize Gesture</Button>
+        <Button onClick={handleGesture} disabled={!photoUrl || !hasCameraPermission || isCapturing}>Recognize Gesture</Button>
       </div>
       {photoUrl && (
         <img src={photoUrl} alt="Captured Gesture" className="max-w-md rounded-md shadow-lg" />
