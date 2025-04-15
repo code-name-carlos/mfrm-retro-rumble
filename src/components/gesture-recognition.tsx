@@ -20,6 +20,8 @@ export const GestureRecognition: React.FC<GestureRecognitionProps> = ({
   const [hasCameraPermission, setHasCameraPermission] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [isCapturing, setIsCapturing] = useState(false); // Track if capture is in progress
+    const [showCountdownOverlay, setShowCountdownOverlay] = useState(false); // Track if countdown overlay is visible
+
 
   const getCameraPermission = useCallback(async () => {
     try {
@@ -42,8 +44,8 @@ export const GestureRecognition: React.FC<GestureRecognitionProps> = ({
 
   // Get camera permission on mount
   useEffect(() => {
-      getCameraPermission();
-    }, [getCameraPermission]);
+    getCameraPermission();
+  }, [getCameraPermission]);
 
 
   //Toast when error occur
@@ -78,11 +80,13 @@ export const GestureRecognition: React.FC<GestureRecognitionProps> = ({
       setError("Error occurred during gesture recognition.");
     } finally {
       setIsCapturing(false);
+            setShowCountdownOverlay(false); // Hide overlay after capture
     }
   }, [onMoveSelect, photoUrl]);
 
   const startCountdown = useCallback(() => {
-    setCountdown(3);
+      setShowCountdownOverlay(true); // Show overlay before countdown
+      setCountdown(3);
   }, []);
 
   useEffect(() => {
@@ -128,36 +132,39 @@ export const GestureRecognition: React.FC<GestureRecognitionProps> = ({
     startCountdown();
   }, [startCountdown]);
 
-    //This useEffect captures after screen recording has a photoURL
-    useEffect(() => {
-        if (photoUrl) {
-            handleGesture();
-        }
-    }, [photoUrl, handleGesture])
+  //This useEffect captures after screen recording has a photoURL
+  useEffect(() => {
+    if (photoUrl) {
+      handleGesture();
+    }
+  }, [photoUrl, handleGesture]);
 
   return (
-    <div className="flex flex-col items-center space-y-4">
-      <video ref={videoRef} className="w-full aspect-video rounded-md" autoPlay muted />
-
-      { !(hasCameraPermission) && (
-          <Alert variant="destructive">
-                    <AlertTitle>Camera Access Required</AlertTitle>
-                    <AlertDescription>
-                      Please allow camera access to use this feature.
-                    </AlertDescription>
-            </Alert>
-      )
-      }
-       {countdown !== null ? (
-        <div className="text-5xl font-bold text-accent">{countdown}</div>
-      ) : (
-           <Button onClick={handleShoot} disabled={!hasCameraPermission || isCapturing} >
-             Shoot!
-           </Button>
+    <div className="flex flex-col items-center space-y-4 relative">
+      {showCountdownOverlay && (
+        <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black/75 text-white text-9xl font-bold z-50">
+          {countdown > 0 ? countdown : "Smile!"}
+        </div>
       )}
+      <video ref={videoRef} className="w-full aspect-video rounded-md" autoPlay muted style={{ display: showCountdownOverlay ? 'none' : 'block' }}/>
+
+      {!(hasCameraPermission) && (
+        <Alert variant="destructive">
+          <AlertTitle>Camera Access Required</AlertTitle>
+          <AlertDescription>
+            Please allow camera access to use this feature.
+          </AlertDescription>
+        </Alert>
+      )}
+      {countdown === null ? (
+        <Button onClick={handleShoot} disabled={!hasCameraPermission || isCapturing} >
+          Shoot!
+        </Button>
+      ) : null}
       {photoUrl && (
         <img src={photoUrl} alt="Captured Gesture" className="max-w-md rounded-md shadow-lg" />
       )}
     </div>
   );
 };
+

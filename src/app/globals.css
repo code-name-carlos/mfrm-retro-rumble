@@ -1,10 +1,36 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Dosis:wght@400;700&family=Poppins:wght@300;400;500;600&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 body {
-  font-family: monospace;
+  font-family: 'Dosis', sans-serif; /* Primary legible font */
+
+  background-color: var(--background);
+  color: var(--foreground);
+  background-image: radial-gradient(circle, white 2px, transparent 2.5px); /* Polka dot */
+  background-size: 25px 25px; /* Adjust polka dot size */
+  background-position: center;
 }
+
+.title-container {
+    position: relative;
+    height: 60px; /* Adjust height as needed */
+    overflow: hidden; /* Hide titles that are not active */
+  }
+  
+  .animated-title {
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    top: 0;
+    left: 0;
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
+    font-family: 'Dosis', cursive; /* For cursive touch */
+  }
+  
 
 @layer base {
   :root {
@@ -86,3 +112,4 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
