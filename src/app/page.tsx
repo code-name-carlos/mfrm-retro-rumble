@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Dialog, DialogTrigger, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog"; // Import Dialog components
 import { GestureRecognition } from "@/components/gesture-recognition";
+import Confetti from 'react-dom-confetti';
 
 // Emoji art for Rock, Paper, Scissors, Lizard, Spock
 const moveEmojis = {
@@ -39,10 +40,24 @@ const determineWinner = (playerMove: Move, opponentMove: Move) => {
   };
 
   if (winningCombinations[playerMove].includes(opponentMove)) {
-    return `You win! ${playerMove} beats ${opponentMove}`;
+    return "win"; // You win
   } else {
-    return `You lose! ${opponentMove} beats ${playerMove}`;
+    return "lose"; // You lose
   }
+};
+
+const confettiConfig = {
+  angle: 90,
+  spread: 45,
+  startVelocity: 45,
+  elementCount: 300,
+  dragFriction: 0.1,
+  duration: 3000,
+  stagger: 5,
+  width: "10px",
+  height: "10px",
+  perspective: "500px",
+  colors: ["#a864fd", "#29cdff", "#78ff44", "#ff718d", "#fdff6a"]
 };
 
 export default function Home() {
@@ -55,8 +70,12 @@ export default function Home() {
   const [gameMode, setGameMode] = useState<"gesture" | "manual">("manual"); // Default to manual
   const [playerHealth, setPlayerHealth] = useState(100);
   const [opponentHealth, setOpponentHealth] = useState(100);
-  const [timeLeft, setTimeLeft] = useState(15);
-  const [isTimeRunning, setIsTimeRunning] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(60);
+  const [isTimeRunning, setIsTimeRunning] = useState(true);
+  const [isGameActive, setIsGameActive] = useState(true); // To control gameplay
+  const [gameEnded, setGameEnded] = useState(false);
+  const [winner, setWinner] = useState<string | null>(null);
+  const [confetti, setConfetti] = useState(false);
 
   const [showVideo, setShowVideo] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -70,49 +89,46 @@ export default function Home() {
 
   const handleMoveSelect = useCallback(
     (move: Move) => {
-      if (playerMove !== null) {
-        handleIllegalMove();
-        return;
-      }
+      if (!isGameActive) return;
 
       setPlayerMove(move);
       const aiMove = getAIAssertiveMove();
       setOpponentMove(aiMove);
-      setResult(determineWinner(move, aiMove));
+      const gameResult = determineWinner(move, aiMove);
+      setResult(gameResult === 'win' ? `You win! ${move} beats ${aiMove}` : `You lose! ${aiMove} beats ${move}`);
 
-      // Reduce health
-      setPlayerHealth(prev => Math.max(0, prev - 33)); // Reduce health on each move
-      setOpponentHealth(prev => Math.max(0, prev - 33));
-
+      // Only decrement health for the loser
+      if (gameResult === 'win') {
+        setOpponentHealth(prev => Math.max(0, prev - 33));
+      } else if (gameResult === 'lose') {
+        setPlayerHealth(prev => Math.max(0, prev - 33));
+      }
+      setIsGameActive(false); // Disable further moves until the next round
     },
-    [playerMove, toast]
+    [isGameActive]
   );
 
   const handleGestureSelect = useCallback(
     (move: Move) => {
-      if (playerMove !== null) {
-        handleIllegalMove();
-        return;
-      }
+      if (!isGameActive) return;
 
       setPlayerMove(move);
       const aiMove = getAIAssertiveMove();
       setOpponentMove(aiMove);
-      setResult(determineWinner(move, aiMove));
+      const gameResult = determineWinner(move, aiMove);
+      setResult(gameResult === 'win' ? `You win! ${move} beats ${aiMove}` : `You lose! ${aiMove} beats ${move}`);
+      updateHealth(gameResult);
     },
-    [playerMove, toast]
+    [isGameActive]
   );
 
-  const handleIllegalMove = useCallback(
-    () => {
-      toast({
-        variant: "destructive",
-        title: "Illegal move",
-        description: "You've already chosen your gameplay action! Please play again!",
-      });
-    },
-    [toast]
-  );
+  const updateHealth = (gameResult: string) => {
+    if (gameResult === 'win') {
+      setOpponentHealth(prev => Math.max(0, prev - 33));
+    } else if (gameResult === 'lose') {
+      setPlayerHealth(prev => Math.max(0, prev - 33));
+    }
+  };
 
   const handleShowInstructions = () => {
     setInstructions(
@@ -144,15 +160,29 @@ export default function Home() {
     setGameMode("manual"); // Reset to manual mode
     setPlayerHealth(100);
     setOpponentHealth(100);
-    setTimeLeft(15);
-    setIsTimeRunning(false);
+    setTimeLeft(60);
+    setIsTimeRunning(true);
     setShowVideo(false);
+    setIsGameActive(true);
+    setGameEnded(false);
+    setWinner(null);
+    setConfetti(false);
   };
 
   const handlePlayAgain = () => {
     resetGame();
     setShowMoveButtons(true);
   };
+
+  useEffect(() => {
+    if (playerHealth <= 0 || opponentHealth <= 0) {
+      setIsTimeRunning(false);
+      setIsGameActive(false);
+      setGameEnded(true);
+      setWinner(playerHealth > opponentHealth ? 'Player' : 'Opponent');
+      setConfetti(true);
+    }
+  }, [playerHealth, opponentHealth]);
 
   useEffect(() => {
     if (isTimeRunning && timeLeft > 0) {
@@ -165,8 +195,12 @@ export default function Home() {
       // Handle what happens when time runs out
       console.log("Time's up!");
       setIsTimeRunning(false);
+      setIsGameActive(false);
+      setGameEnded(true);
+      setWinner(playerHealth > opponentHealth ? 'Player' : 'Opponent');
+      setConfetti(true);
     }
-  }, [isTimeRunning, timeLeft]);
+  }, [isTimeRunning, timeLeft, playerHealth, opponentHealth]);
 
   const handleShoot = async () => {
     setShowVideo(true); // Show the video
@@ -242,6 +276,7 @@ export default function Home() {
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
     const newPhotoUrl = canvas.toDataURL('image/png');
     setPhotoUrl(newPhotoUrl);
+    setShowVideo(false); // Hide the video once the photo is captured
   }, [toast]);
 
   useEffect(() => {
@@ -255,11 +290,11 @@ export default function Home() {
       const playerAutoMove = getAIAssertiveMove(); // Get a random move
       setPlayerMove(playerAutoMove); // Set the player's move
 
-      setResult(determineWinner(playerAutoMove, aiMove));
-      setPlayerHealth(prev => Math.max(0, prev - 33)); // Reduce health on each move
-      setOpponentHealth(prev => Math.max(0, prev - 33));
-
-      setShowVideo(false); // Hide the video
+      const gameResult = determineWinner(playerAutoMove, aiMove);
+      setResult(gameResult === 'win' ? `You win! ${playerAutoMove} beats ${aiMove}` : `You lose! ${aiMove} beats ${playerAutoMove}`);
+      updateHealth(gameResult);
+      setIsGameActive(false);
+      setPhotoUrl(null);
     }
   }, [photoUrl]);
 
@@ -273,6 +308,28 @@ export default function Home() {
     );
   };
 
+  const getConfig = (value:number) => {
+    return {
+      ...confettiConfig,
+      origin: { x: 0.1, y: value }
+    }
+  }
+
+  useEffect(() => {
+    if (isGameActive && timeLeft > 0) {
+      const timer = setInterval(() => {
+        setTimeLeft(prevTime => prevTime - 1);
+      }, 1000);
+      return () => clearInterval(timer);
+    } else if (timeLeft === 0) {
+      setIsTimeRunning(false);
+      setIsGameActive(false);
+      setGameEnded(true);
+      setWinner(playerHealth > opponentHealth ? 'Player' : 'Opponent');
+      setConfetti(true);
+    }
+  }, [isTimeRunning, timeLeft, playerHealth, opponentHealth, isGameActive]);
+
   return (
     <div className="flex flex-col items-center justify-start min-h-screen p-4 bg-background relative overflow-hidden">
       {/* Top Left Circle */}
@@ -283,6 +340,8 @@ export default function Home() {
 
       <h1 className="text-3xl font-bold mb-4 text-foreground z-10 pixelated">Retro Rumble</h1>
       <h2 className="text-xl mb-4 text-muted-foreground z-10 pixelated" aria-level={1}>Rock Paper Scissors Lizard Spock</h2>
+            <Confetti active={confetti} config={ getConfig(.25) }/>
+            <Confetti active={confetti} config={ getConfig(.75) }/>
 
       {/* Player and Opponent Info */}
       <div className="flex justify-around w-full max-w-4xl mb-4 z-10">
@@ -359,11 +418,11 @@ export default function Home() {
 
       {/* Options Box */}
       <div className="flex justify-center space-x-4 mt-4 z-10 w-full max-w-md">
-        <Button onClick={handleShoot} disabled={!hasCameraPermission} className="w-1/2 pixelated">
+        <Button onClick={handleShoot} disabled={!hasCameraPermission || !isGameActive} className="w-1/2 pixelated" style={{ width: '100%' }}>
           Shoot!
         </Button>
-        <Button onClick={handleShowInstructions} className="w-1/2 pixelated">Instructions</Button>
-        <Button onClick={handleResetGame} className="w-1/2 pixelated">Reset Game</Button>
+        <Button onClick={handleShowInstructions} className="w-1/2 pixelated" style={{ width: '100%' }}>Instructions</Button>
+        <Button onClick={handleResetGame} className="w-1/2 pixelated" style={{ width: '100%' }}>Reset Game</Button>
       </div>
       {/* Render the countdown overlay when showVideo is true */}
       {renderCountdownOverlay()}
@@ -392,6 +451,12 @@ export default function Home() {
           </DialogContent>
         </Dialog>
       )}
+        {gameEnded && winner && (
+          <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black/75 text-white text-5xl font-bold z-50">
+            {winner} Wins!
+          </div>
+        )}
     </div>
   );
 }
+

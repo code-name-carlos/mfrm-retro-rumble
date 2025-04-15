@@ -167,3 +167,4 @@ export const GestureRecognition: React.FC<GestureRecognitionProps> = ({
     </div>
   );
 };
+
