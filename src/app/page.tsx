@@ -1,11 +1,13 @@
+
 "use client";
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { GestureRecognition } from "@/components/gesture-recognition";
 import { Label } from "@/components/ui/label"; // Import Label
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 
 // Emoji art for Rock, Paper, Scissors, Lizard, Spock
 const moveEmojis = {
@@ -49,8 +51,13 @@ export default function Home() {
   const [result, setResult] = useState<string | null>(null);
   const [showOptions, setShowOptions] = useState(false);
   const [instructions, setInstructions] = useState("");
-  const [showMoveButtons, setShowMoveButtons] = useState(false);
-  const [gameMode, setGameMode] = useState<"gesture" | "manual">("gesture");
+  const [showMoveButtons, setShowMoveButtons] = useState(true);
+  const [gameMode, setGameMode] = useState<"gesture" | "manual">("manual"); // Default to manual
+  const [playerHealth, setPlayerHealth] = useState(100);
+  const [opponentHealth, setOpponentHealth] = useState(100);
+  const [timeLeft, setTimeLeft] = useState(15);
+  const [isTimeRunning, setIsTimeRunning] = useState(false);
+
 
   //Toast Errors
   const { toast } = useToast();
@@ -122,46 +129,89 @@ export default function Home() {
     setPlayerMove(null);
     setOpponentMove(null);
     setResult(null);
-    setShowMoveButtons(false);
-    setGameMode("gesture"); // Reset to gesture mode
+    setShowMoveButtons(true);
+    setGameMode("manual"); // Reset to manual mode
+    setPlayerHealth(100);
+    setOpponentHealth(100);
+    setTimeLeft(15);
+    setIsTimeRunning(false);
   };
 
   const handlePlayAgain = () => {
     resetGame();
-    setShowMoveButtons(false);
+    setShowMoveButtons(true);
   };
 
+  useEffect(() => {
+    if (isTimeRunning && timeLeft > 0) {
+      const timer = setTimeout(() => {
+        setTimeLeft(timeLeft - 1);
+      }, 1000);
+
+      return () => clearTimeout(timer);
+    } else if (timeLeft === 0) {
+      // Handle what happens when time runs out
+      console.log("Time's up!");
+      setIsTimeRunning(false);
+    }
+  }, [isTimeRunning, timeLeft]);
+
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-background relative overflow-hidden">
+    <div className="flex flex-col items-center justify-start min-h-screen p-4 bg-background relative overflow-hidden">
       {/* Top Left Circle */}
       <div className="absolute top-0 left-0 w-32 h-32 rounded-full bg-accent -translate-x-1/4 -translate-y-1/4 md:w-64 md:h-64 md:-translate-x-1/8 md:-translate-y-1/8"></div>
 
       {/* Bottom Right Circle */}
       <div className="absolute bottom-0 right-0 w-32 h-32 rounded-full bg-primary translate-x-1/4 translate-y-1/4 md:w-64 md:h-64 md:translate-x-1/8 md:translate-y-1/8"></div>
 
-      <h1 className="text-3xl font-bold mb-4 text-foreground z-10">SHOOT!</h1>
-      <h2 className="text-xl mb-4 text-muted-foreground z-10" aria-level={1}>Rock Paper Scissors Lizard Spock</h2>
+      <h1 className="text-3xl font-bold mb-4 text-foreground z-10 pixelated">Retro Rumble</h1>
+      <h2 className="text-xl mb-4 text-muted-foreground z-10 pixelated" aria-level={1}>Rock Paper Scissors Lizard Spock</h2>
 
+      {/* Player and Opponent Info */}
+      <div className="flex justify-around w-full max-w-4xl mb-4 z-10">
+        <div className="w-1/2 mx-2">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-lg text-foreground pixelated">Player</span>
+            <span className="text-sm text-muted-foreground pixelated">100%</span>
+          </div>
+          <Progress value={playerHealth} />
+        </div>
+
+        <div className="w-1/2 mx-2">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-lg text-foreground pixelated">Opponent</span>
+            <span className="text-sm text-muted-foreground pixelated">100%</span>
+          </div>
+          <Progress value={opponentHealth} />
+        </div>
+      </div>
+
+      {/* Timer */}
+      <div className="text-2xl mb-4 text-accent z-10 pixelated">
+        Time: {timeLeft}
+      </div>
+
+      {/* Move Display */}
       <div className="flex justify-around w-full max-w-4xl mb-8 z-10">
-        <Card className="w-1/2 mx-2">
+        <Card className="w-1/2 mx-2 bg-card border-2 border-border">
           <CardContent className="flex flex-col items-center">
-            <h2 className="text-xl mb-2 text-foreground">Player</h2>
+            <h2 className="text-xl mb-2 text-foreground pixelated">Player</h2>
             <div className="text-8xl" role="img" aria-label={`Player Move: ${playerMove || "Not selected"}`}>
               {playerMove ? moveEmojis[playerMove] : "❓"}
             </div>
-            <p className="text-sm text-muted-foreground" aria-live="polite">
+            <p className="text-sm text-muted-foreground pixelated" aria-live="polite">
               Move: {playerMove || "Not selected"}
             </p>
           </CardContent>
         </Card>
 
-        <Card className="w-1/2 mx-2">
+        <Card className="w-1/2 mx-2 bg-card border-2 border-border">
           <CardContent className="flex flex-col items-center">
-            <h2 className="text-xl mb-2 text-foreground">Opponent</h2>
+            <h2 className="text-xl mb-2 text-foreground pixelated">Opponent</h2>
             <div className="text-8xl" role="img" aria-label={`Opponent Move: ${opponentMove || "Not selected"}`}>
               {opponentMove ? moveEmojis[opponentMove] : "❓"}
             </div>
-            <p className="text-sm text-muted-foreground" aria-live="polite">
+            <p className="text-sm text-muted-foreground pixelated" aria-live="polite">
               Move: {opponentMove || "Not selected"}
             </p>
           </CardContent>
@@ -169,7 +219,7 @@ export default function Home() {
       </div>
 
       {result && (
-        <p className="text-lg mb-4 text-accent z-10" aria-live="assertive">
+        <p className="text-lg mb-4 text-accent z-10 pixelated" aria-live="assertive">
           {result}
         </p>
       )}
@@ -179,45 +229,22 @@ export default function Home() {
         <AlertDescription>{instructions}</AlertDescription>
       </Alert>}
 
-      {/* Options Box */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20">
-        <div className="flex justify-center space-x-4 z-10">
-          <Button onClick={handleToggleOptions}>Options</Button>
-        </div>
-        {showOptions && (
-          <div className="mt-2 bg-card p-4 rounded-md shadow-md z-20">
-            <div className="grid grid-cols-2 gap-2">
-              <Button onClick={() => { setShowMoveButtons(true); setGameMode("manual"); setShowOptions(false); }}>FIGHT</Button>
-              <Button onClick={handleShowInstructions} className="col-span-2">Instructions</Button>
-              <Button onClick={handleResetGame} className="col-span-2">Reset Game</Button>
-            </div>
-          </div>
+      {/* Gameplay Logic - Move Selection */}
+      <div className="flex justify-center space-x-4 z-10">
+        {showMoveButtons && (
+          moves.map((move) => (
+            <Button key={move} onClick={() => handleMoveSelect(move)} aria-label={`Select ${move} move`} className="pixelated">
+              <Label htmlFor={move}>{moveEmojis[move]}</Label>
+            </Button>
+          ))
         )}
       </div>
 
-      {/* Gameplay Logic - Move Selection */}
-      <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-10">
-        {playerMove ? (
-          // Play Again Button
-          <Button onClick={handlePlayAgain} className="mt-4">
-            Play Again
-          </Button>
-        ) : (
-          <>
-            {showMoveButtons && (
-              <div className="flex justify-center space-x-4 z-10">
-                {moves.map((move) => (
-                  <Button key={move} onClick={() => handleMoveSelect(move)} aria-label={`Select ${move} move`}>
-                    <Label htmlFor={move}>{moveEmojis[move]}</Label>
-                  </Button>
-                ))}
-              </div>
-            )}
-            {gameMode === "gesture" && <GestureRecognition onMoveSelect={handleGestureSelect} />}
-          </>
-        )}
+      {/* Options Box */}
+      <div className="flex justify-center space-x-4 mt-4 z-10 w-full max-w-md">
+        <Button onClick={handleShowInstructions} className="w-1/2 pixelated">Instructions</Button>
+        <Button onClick={handleResetGame} className="w-1/2 pixelated">Reset Game</Button>
       </div>
     </div>
   );
 }
-

@@ -1,5 +1,7 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Dosis:wght@400;700&family=Poppins:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -31,27 +33,30 @@ body {
     font-family: 'Dosis', cursive; /* For cursive touch */
   }
   
+.pixelated {
+  font-family: 'Press Start 2P', cursive;
+}
 
 @layer base {
   :root {
-    --background: 0 0% 0%; /* Black */
+    --background: 225 33% 20%; /* Dark blue */
     --foreground: 53 100% 59%; /* Neon Yellow (#FEE440) HSL conversion */
-    --card: 0 0% 10%; /* Darker Black */
+    --card: 225 33% 25%; /* Slightly lighter dark blue */
     --card-foreground: 53 100% 59%; /* Neon Yellow */
-    --popover: 0 0% 10%; /* Darker Black */
+    --popover: 225 33% 25%; /* Slightly lighter dark blue */
     --popover-foreground: 53 100% 59%; /* Neon Yellow */
     --primary: 53 100% 59%; /* Neon Yellow */
-    --primary-foreground: 0 0% 0%; /* Black */
-    --secondary: 0 0% 20%; /* Even Darker Black */
+    --primary-foreground: 225 33% 20%; /* Dark blue */
+    --secondary: 225 33% 30%; /* Lighter dark blue */
     --secondary-foreground: 53 100% 59%; /* Neon Yellow */
-    --muted: 0 0% 30%; /* Slightly lighter Black */
+    --muted: 225 33% 40%; /* Even lighter dark blue */
     --muted-foreground: 53 100% 45%; /* Slightly darker Neon Yellow variant */
     --accent: 330 100% 75%; /* Hot Pink (#FF69B4) HSL conversion */
-    --accent-foreground: 0 0% 0%; /* Black */
+    --accent-foreground: 225 33% 20%; /* Dark blue */
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 40%; /* Slightly Lighter Black */
-    --input: 0 0% 30%; /* Darker Black */
+    --border: 225 33% 50%; /* Slightly Lighter dark blue */
+    --input: 225 33% 40%; /* Lighter dark blue */
     --ring: 330 100% 75%; /* Hot Pink */
     --chart-1: 12 76% 61%;
     --chart-2: 173 58% 39%;
@@ -59,47 +64,47 @@ body {
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
-    --sidebar-background: 0 0% 20%; /* Even Darker Black */
+    --sidebar-background: 225 33% 30%; /* Lighter dark blue */
     --sidebar-foreground: 53 100% 59%; /* Neon Yellow */
     --sidebar-primary: 53 100% 59%; /* Neon Yellow */
-    --sidebar-primary-foreground: 0 0% 0%; /* Black */
+    --sidebar-primary-foreground: 225 33% 20%; /* Dark blue */
     --sidebar-accent: 330 100% 75%; /* Hot Pink */
-    --sidebar-accent-foreground: 0 0% 0%; /* Black */
-    --sidebar-border: 0 0% 40%; /* Slightly Lighter Black */
+    --sidebar-accent-foreground: 225 33% 20%; /* Dark blue */
+    --sidebar-border: 225 33% 50%; /* Slightly Lighter dark blue */
     --sidebar-ring: 330 100% 75%; /* Hot Pink */
   }
   .dark {
-    --background: 0 0% 0%; /* Black */
-    --foreground: 53 100% 59%; /* Neon Yellow */
-    --card: 0 0% 10%; /* Darker Black */
+    --background: 225 33% 20%; /* Dark blue */
+    --foreground: 53 100% 59%; /* Neon Yellow (#FEE440) HSL conversion */
+    --card: 225 33% 25%; /* Slightly lighter dark blue */
     --card-foreground: 53 100% 59%; /* Neon Yellow */
-    --popover: 0 0% 10%; /* Darker Black */
+    --popover: 225 33% 25%; /* Slightly lighter dark blue */
     --popover-foreground: 53 100% 59%; /* Neon Yellow */
     --primary: 53 100% 59%; /* Neon Yellow */
-    --primary-foreground: 0 0% 0%; /* Black */
-    --secondary: 0 0% 20%; /* Even Darker Black */
+    --primary-foreground: 225 33% 20%; /* Dark blue */
+    --secondary: 225 33% 30%; /* Lighter dark blue */
     --secondary-foreground: 53 100% 59%; /* Neon Yellow */
-    --muted: 0 0% 30%; /* Slightly lighter Black */
+    --muted: 225 33% 40%; /* Even lighter dark blue */
     --muted-foreground: 53 100% 45%; /* Slightly darker Neon Yellow variant */
     --accent: 330 100% 75%; /* Hot Pink */
-    --accent-foreground: 0 0% 0%; /* Black */
+    --accent-foreground: 225 33% 20%; /* Dark blue */
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 40%; /* Slightly Lighter Black */
-    --input: 0 0% 30%; /* Darker Black */
+    --border: 225 33% 50%; /* Slightly Lighter dark blue */
+    --input: 225 33% 40%; /* Lighter dark blue */
     --ring: 330 100% 75%; /* Hot Pink */
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
-    --sidebar-background: 0 0% 20%; /* Even Darker Black */
+    --sidebar-background: 225 33% 30%; /* Lighter dark blue */
     --sidebar-foreground: 53 100% 59%; /* Neon Yellow */
     --sidebar-primary: 53 100% 59%; /* Neon Yellow */
-    --sidebar-primary-foreground: 0 0% 0%; /* Black */
+    --sidebar-primary-foreground: 225 33% 20%; /* Dark blue */
     --sidebar-accent: 330 100% 75%; /* Hot Pink */
-    --sidebar-accent-foreground: 0 0% 0%; /* Black */
-    --sidebar-border: 0 0% 40%; /* Slightly Lighter Black */
+    --sidebar-accent-foreground: 225 33% 20%; /* Dark blue */
+    --sidebar-border: 225 33% 50%; /* Slightly Lighter dark blue */
     --sidebar-ring: 330 100% 75%; /* Hot Pink */
   }
 }
@@ -112,4 +117,5 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
 
