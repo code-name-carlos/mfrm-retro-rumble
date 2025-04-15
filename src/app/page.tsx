@@ -9,7 +9,6 @@ import { Progress } from "@/components/ui/progress";
 import { Dialog, DialogTrigger, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog"; // Import Dialog components
 import { GestureRecognition } from "@/components/gesture-recognition";
 import Confetti from 'react-dom-confetti';
-import SleepExpert from "@/components/ui/sleep-expert";
 
 // Emoji art for Rock, Paper, Scissors, Lizard, Spock
 const moveEmojis = {
@@ -418,8 +417,6 @@ export default function Home() {
           ))}
         </div>
       )}
-
-      <SleepExpert />
 
       {/* Options Box */}
       <div className="flex justify-center space-x-4 mt-4 z-10 w-full max-w-md">
