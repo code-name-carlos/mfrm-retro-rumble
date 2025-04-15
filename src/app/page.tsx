@@ -152,7 +152,7 @@ export default function Home() {
     setShowOptions(false);
   };
 
-  const resetGame = () => {
+  const resetGame = useCallback(() => {
     setPlayerMove(null);
     setOpponentMove(null);
     setResult(null);
@@ -167,7 +167,9 @@ export default function Home() {
     setGameEnded(false);
     setWinner(null);
     setConfetti(false);
-  };
+    setPhotoUrl(null);
+    setCountdown(null);
+  }, []);
 
   const handlePlayAgain = () => {
     resetGame();
@@ -459,4 +461,3 @@ export default function Home() {
     </div>
   );
 }
-
